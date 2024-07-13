@@ -10,15 +10,11 @@ public class MouseWorld : MonoBehaviour {
     [SerializeField] private LayerMask MousePlaneLayerMask;
 
     private void Awake() {
-        if (instance == null) {
-            instance = this;
-        } else {
-            Destroy(instance);
-        }
+        instance = this;
     }
 
     public static Vector3 GetPosition() {
-        Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit mouseWorldHit, float.MaxValue, instance.MousePlaneLayerMask);
-        return mouseWorldHit.point;
+        Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit raycastHit, float.MaxValue, instance.MousePlaneLayerMask);
+        return raycastHit.point;
     }
 }
