@@ -17,7 +17,6 @@ public class UnitActionSystem : MonoBehaviour {
             Debug.LogError("Attempting to create multiple instances of UnitActionSystem! " + transform + " " + Instance);
             Destroy(gameObject);
         }
-
         Instance = this;
     }
 
