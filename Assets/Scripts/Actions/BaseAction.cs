@@ -15,7 +15,7 @@ public abstract class BaseAction : MonoBehaviour {
 
     public abstract string GetActionName();
 
-    public abstract void TakeAction(GridPosition position, Action onActionComplete);
+    public abstract void TakeAction(GridPosition position, Action onActionCompleteCallback);
 
     public virtual bool IsValidActionGridPosition(GridPosition gridPosition) {
         return GetValidActionGridPositionList().Contains(gridPosition);
@@ -25,5 +25,15 @@ public abstract class BaseAction : MonoBehaviour {
 
     public virtual int GetActionPointCost() {
         return 1;
+    }
+
+    protected void ActionStart(Action onActionCompleteCallback) {
+        isActive = true;
+        this.onActionCompleteCallback = onActionCompleteCallback;
+    }
+
+    protected void ActionComplete() {
+        isActive = false;
+        onActionCompleteCallback?.Invoke();
     }
 }

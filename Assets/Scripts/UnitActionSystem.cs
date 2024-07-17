@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -33,6 +34,10 @@ public class UnitActionSystem : MonoBehaviour {
     }
 
     private void Update() {
+        if (!TurnSystem.Instance.IsPlayerTurn()) {
+            return;
+        }
+
         if (isBusy) {
             return;
         }
@@ -71,7 +76,13 @@ public class UnitActionSystem : MonoBehaviour {
         if (Input.GetMouseButtonDown(0)) {
             if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit raycastHit, float.MaxValue, unitLayerMask)) {
                 if (raycastHit.transform.TryGetComponent<Unit>(out Unit unit)) {
+                    // Already selected
                     if (unit == selectedUnit) {
+                        return false;
+                    }
+                    
+                    // Is Enemy
+                    if (unit.IsEnemy()) {
                         return false;
                     }
                     SetSelectedUnit(unit);

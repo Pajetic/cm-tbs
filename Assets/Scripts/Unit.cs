@@ -9,13 +9,16 @@ public class Unit : MonoBehaviour {
 
     public static event EventHandler OnAnyActionPointsChanged;
 
+    [SerializeField] private bool isEnemy;
     private GridPosition gridPosition;
+    private HealthSystem healthSystem;
     private MoveAction moveAction;
     private SpinAction spinAction;
     private BaseAction[] baseActionArray;
     private int actionPoints = ACTION_POINTS_MAX;
 
     private void Awake() {
+        healthSystem = GetComponent<HealthSystem>();
         moveAction = GetComponent<MoveAction>();
         spinAction = GetComponent<SpinAction>();
         baseActionArray = GetComponents<BaseAction>();
@@ -25,11 +28,20 @@ public class Unit : MonoBehaviour {
         gridPosition = LevelGrid.Instance.GetGridPosition(transform.position);
         LevelGrid.Instance.AddUnitAtGridPosition(gridPosition, this);
         TurnSystem.Instance.OnNextTurn += TurnSystem_OnNextTurn;
+        healthSystem.OnDeath += HealthSystem_OnDeath;
+    }
+
+    private void HealthSystem_OnDeath(object sender, EventArgs e) {
+        LevelGrid.Instance.RemoveUnitAtGridPosition(gridPosition, this);
+        Destroy(gameObject);
     }
 
     private void TurnSystem_OnNextTurn(object sender, System.EventArgs e) {
-        actionPoints = ACTION_POINTS_MAX;
-        OnAnyActionPointsChanged?.Invoke(sender, EventArgs.Empty);
+        if ((IsEnemy() && !TurnSystem.Instance.IsPlayerTurn()) ||
+            (!IsEnemy() && TurnSystem.Instance.IsPlayerTurn())) {
+            actionPoints = ACTION_POINTS_MAX;
+            OnAnyActionPointsChanged?.Invoke(sender, EventArgs.Empty);
+        }
     }
 
     private void Update() {
@@ -56,6 +68,10 @@ public class Unit : MonoBehaviour {
         return baseActionArray;
     }
 
+    public bool IsEnemy() {
+        return isEnemy;
+    }
+
     public int GetActionPoints() {
         return actionPoints;
     }
@@ -75,6 +91,14 @@ public class Unit : MonoBehaviour {
     private void SpendActionPoints(int amount) {
         actionPoints -= amount;
         OnAnyActionPointsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void Damage(int damageAmount) {
+        healthSystem.TakeDamage(damageAmount);
+    }
+
+    public Vector3 GetWorldPosition() {
+        return transform.position;
     }
 
     private void OnDestroy() {
