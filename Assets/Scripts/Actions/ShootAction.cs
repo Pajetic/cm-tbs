@@ -112,12 +112,12 @@ public class ShootAction : BaseAction {
     }
 
     public override void TakeAction(GridPosition position, Action onActionCompleteCallback) {
-        base.ActionStart(onActionCompleteCallback);
         targetUnit = LevelGrid.Instance.GetUnitAtGridPosition(position);
 
         state = State.Aiming;
         stateTimer = aimingStateTime;
         canShootBullet = true;
+        ActionStart(onActionCompleteCallback);
     }
 
     private void Shoot() {
@@ -125,6 +125,14 @@ public class ShootAction : BaseAction {
             targetUnit = targetUnit,
             shootingUnit = unit
         });
-        targetUnit.Damage(100);
+        targetUnit.Damage(40);
+    }
+
+    public Unit GetTargetUnit() {
+        return targetUnit;
+    }
+
+    public int GetMaxShootDistance() {
+        return maxShootDistance;
     }
 }

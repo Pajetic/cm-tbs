@@ -16,13 +16,13 @@ public class SpinAction : BaseAction {
         transform.eulerAngles += new Vector3(0, spinAddAmount, 0);
         totalSpinAmount += spinAddAmount;
         if (totalSpinAmount > 360f) {
-            base.ActionComplete();
+            ActionComplete();
         }
     }
 
     public override void TakeAction(GridPosition gridPosition, Action onActionCompleteCallback) {
-        base.ActionStart(onActionCompleteCallback);
         totalSpinAmount = 0;
+        ActionStart(onActionCompleteCallback);
     }
 
     public override string GetActionName() {
