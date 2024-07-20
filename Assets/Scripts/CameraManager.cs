@@ -28,11 +28,13 @@ public class CameraManager : MonoBehaviour {
             case ShootAction shootAction:
                 Unit shooterUnit = shootAction.GetUnit();
                 Unit targetUnit = shootAction.GetTargetUnit();
+                Debug.Log("shooter " + shooterUnit + " : target " + targetUnit);
                 Vector3 targetDirNormalized = (targetUnit.GetWorldPosition() - shooterUnit.GetWorldPosition()).normalized;
 
-                Vector3 cameraPosition = Vector3.up * shootActionCameraVerticalOffset
-                    + Vector3.right * shootActionCameraHorizontalOffset
-                    + targetDirNormalized * -1.5f;
+                Vector3 cameraPosition = shooterUnit.GetWorldPosition()
+                    + Vector3.up * shootActionCameraVerticalOffset
+                    + Quaternion.Euler(0, 90, 0) * targetDirNormalized * shootActionCameraHorizontalOffset
+                    + targetDirNormalized * -1f;
 
                 actionCameraGameObject.transform.position = cameraPosition;
                 actionCameraGameObject.transform.LookAt(targetUnit.GetWorldPosition() + Vector3.up * shootActionCameraVerticalOffset);

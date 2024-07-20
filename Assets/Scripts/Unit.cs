@@ -8,19 +8,17 @@ public class Unit : MonoBehaviour {
     private const int ACTION_POINTS_MAX = 2;
 
     public static event EventHandler OnAnyActionPointsChanged;
+    public static event EventHandler OnAnyUnitSpawned;
+    public static event EventHandler OnAnyUnitDestroyed;
 
     [SerializeField] private bool isEnemy;
     private GridPosition gridPosition;
     private HealthSystem healthSystem;
-    private MoveAction moveAction;
-    private SpinAction spinAction;
     private BaseAction[] baseActionArray;
     private int actionPoints = ACTION_POINTS_MAX;
 
     private void Awake() {
         healthSystem = GetComponent<HealthSystem>();
-        moveAction = GetComponent<MoveAction>();
-        spinAction = GetComponent<SpinAction>();
         baseActionArray = GetComponents<BaseAction>();
     }
 
@@ -29,11 +27,13 @@ public class Unit : MonoBehaviour {
         LevelGrid.Instance.AddUnitAtGridPosition(gridPosition, this);
         TurnSystem.Instance.OnNextTurn += TurnSystem_OnNextTurn;
         healthSystem.OnDeath += HealthSystem_OnDeath;
+        OnAnyUnitSpawned?.Invoke(this, EventArgs.Empty);
     }
 
     private void HealthSystem_OnDeath(object sender, EventArgs e) {
         LevelGrid.Instance.RemoveUnitAtGridPosition(gridPosition, this);
         Destroy(gameObject);
+        OnAnyUnitDestroyed?.Invoke(this, EventArgs.Empty);
     }
 
     private void TurnSystem_OnNextTurn(object sender, System.EventArgs e) {
@@ -53,16 +53,17 @@ public class Unit : MonoBehaviour {
         }
     }
 
-    public MoveAction GetMoveAction() {
-        return moveAction;
-    }
-
     public GridPosition GetGridPosition() {
         return gridPosition;
     }
 
-    public SpinAction GetSpinAction() {
-        return spinAction;
+    public T GetAction<T>() where T : BaseAction {
+        foreach (BaseAction baseAction in baseActionArray) {
+            if (baseAction is T) {
+                return (T)baseAction;
+            }
+        }
+        return null;
     }
 
     public BaseAction[] GetBaseActionArray() {
@@ -77,7 +78,7 @@ public class Unit : MonoBehaviour {
         return actionPoints;
     }
 
-    private bool CanAffordAction(BaseAction baseAction) {
+    public bool CanAffordAction(BaseAction baseAction) {
         return actionPoints >= baseAction.GetActionPointCost();
     }
 
@@ -100,6 +101,10 @@ public class Unit : MonoBehaviour {
 
     public Vector3 GetWorldPosition() {
         return transform.position;
+    }
+
+    public float GetHealthNormalized() {
+        return healthSystem.GetHealthNormalized();
     }
 
     private void OnDestroy() {
