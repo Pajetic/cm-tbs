@@ -11,8 +11,7 @@ public class DebugTest : MonoBehaviour {
 
     private void Update() {
 
-        if (Input.GetKeyDown(KeyCode.T)) {
-            
-        }
+        //if (Input.GetKeyDown(KeyCode.T)) {
+        //}
     }
 }

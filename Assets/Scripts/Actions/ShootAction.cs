@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -19,6 +20,7 @@ public class ShootAction : BaseAction {
         Recovering
     }
 
+    [SerializeField] private LayerMask obstaclesLayerMask;
     private int maxShootDistance = 7;
     private State state;
     private float stateTimer;
@@ -104,6 +106,18 @@ public class ShootAction : BaseAction {
                 // Unit belong to same team
                 Unit target = LevelGrid.Instance.GetUnitAtGridPosition(tryGridPosition);
                 if (unit.IsEnemy() == target.IsEnemy()) {
+                    continue;
+                }
+
+                float unitShootHeight = 1.7f;
+                Vector3 unitWorldPosition = LevelGrid.Instance.GetWorldPosition(unitGridPosition);  
+                Vector3 shootDir = (target.GetWorldPosition() - unitWorldPosition).normalized;
+                // Check line of sight
+                if (Physics.Raycast(
+                    unitWorldPosition + Vector3.up * unitShootHeight,
+                    shootDir,
+                    Vector3.Distance(unitWorldPosition, target.GetWorldPosition()),
+                    obstaclesLayerMask)) {
                     continue;
                 }
 

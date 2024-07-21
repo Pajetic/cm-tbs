@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class MoveAction : BaseAction {
 
@@ -9,41 +10,45 @@ public class MoveAction : BaseAction {
     public event EventHandler OnStopMoving;
 
     [SerializeField] private int maxMoveDistance = 4;
-    private Vector3 targetPosition;
+    private List<Vector3> positionList;
     private float moveSpeed = 4f;
     private float stoppingDistance = 0.1f;
     private float rotationSpeed = 20f;
-
-    protected override void Awake() {
-        base.Awake();
-        targetPosition = transform.position;
-    }
+    private int currentPositionIndex = 0;
 
     public void Update() {
         if (!isActive) {
             return;
         }
 
+        Vector3 targetPosition = positionList[currentPositionIndex];
+        Vector3 moveDirection = (targetPosition - transform.position).normalized;
         if (Vector3.Distance(transform.position, targetPosition) > stoppingDistance) {
-            // Unit movement
-            Vector3 moveDirection = (targetPosition - transform.position).normalized;
-            transform.position += moveDirection * moveSpeed * Time.deltaTime;
-
             // Unit rotation
-            transform.forward = Vector3.Lerp(transform.forward, moveDirection, rotationSpeed * Time.deltaTime);
-
-            // Run animation
+            //transform.forward = Vector3.Lerp(transform.forward, moveDirection, rotationSpeed * Time.deltaTime);
+            transform.forward = Vector3.RotateTowards(transform.forward, moveDirection, rotationSpeed * Time.deltaTime, 0f);
+            // Unit movement
+            transform.position += moveDirection * moveSpeed * Time.deltaTime;
         } else {
-            // Idle animation
-            base.ActionComplete();
-            OnStopMoving?.Invoke(this, EventArgs.Empty);
+            currentPositionIndex++;
+            if (currentPositionIndex >= positionList.Count) {
+                // Reached final destination
+                OnStopMoving?.Invoke(this, EventArgs.Empty);
+                ActionComplete();
+            }
         }
     }
 
     public override void TakeAction(GridPosition gridPosition, Action onActionCompleteCallback) {
-        targetPosition = LevelGrid.Instance.GetWorldPosition(gridPosition);
-        OnStartMoving?.Invoke(this, EventArgs.Empty);
+        List<GridPosition> pathGridPositionList = Pathfinding.Instance.FindPath(unit.GetGridPosition(), gridPosition, out int pathLength);
+        currentPositionIndex = 0;
+        positionList = new List<Vector3>();
+
+        foreach (GridPosition pathGridPosition in pathGridPositionList) {
+            positionList.Add(LevelGrid.Instance.GetWorldPosition(pathGridPosition));
+        }
         ActionStart(onActionCompleteCallback);
+        OnStartMoving?.Invoke(this, EventArgs.Empty);
     }
 
     public override List<GridPosition> GetValidActionGridPositionList() {
@@ -66,6 +71,22 @@ public class MoveAction : BaseAction {
 
                 // Position occupied by other unit
                 if (LevelGrid.Instance.HasUnitAtGridPosition(tryGridPosition)) {
+                    continue;
+                }
+
+                // Check for obstacles
+                if (!Pathfinding.Instance.IsWalkableGridPosition(tryGridPosition)) {
+                    continue;
+                }
+
+                // Check for unreachable tile
+                if (!Pathfinding.Instance.HasPath(unitGridPosition, tryGridPosition)) {
+                    continue;
+                }
+
+                // Check for path too lengthy
+                int pathfindingDistanceMulti = 10;
+                if (Pathfinding.Instance.GetPathLength(unitGridPosition, tryGridPosition) > maxMoveDistance * pathfindingDistanceMulti) {
                     continue;
                 }
 
