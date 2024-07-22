@@ -20,7 +20,7 @@ public class SpinAction : BaseAction {
         }
     }
 
-    public override void TakeAction(GridPosition gridPosition, Action onActionCompleteCallback) {
+    public override void TakeAction(GridPosition targetPosition, Action onActionCompleteCallback) {
         totalSpinAmount = 0;
         ActionStart(onActionCompleteCallback);
     }

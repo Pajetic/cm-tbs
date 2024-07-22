@@ -39,8 +39,8 @@ public class MoveAction : BaseAction {
         }
     }
 
-    public override void TakeAction(GridPosition gridPosition, Action onActionCompleteCallback) {
-        List<GridPosition> pathGridPositionList = Pathfinding.Instance.FindPath(unit.GetGridPosition(), gridPosition, out int pathLength);
+    public override void TakeAction(GridPosition targetPosition, Action onActionCompleteCallback) {
+        List<GridPosition> pathGridPositionList = Pathfinding.Instance.FindPath(unit.GetGridPosition(), targetPosition, out int pathLength);
         currentPositionIndex = 0;
         positionList = new List<Vector3>();
 
