@@ -73,7 +73,7 @@ public class GridSystemVisual : MonoBehaviour {
         }
     }
 
-    private void ShowGridPositionRange(GridPosition gridPosition, int range, GridVisualType gridVisualType) {
+    private void ShowGridPositionRange(GridPosition gridPosition, int range, GridVisualType gridVisualType, bool isRangeSquare = false) {
         List<GridPosition> gridPositionList = new List<GridPosition>();
         for (int x = -range; x <= range; x++) {
             for (int z = -range; z <= range; z++) {
@@ -85,7 +85,7 @@ public class GridSystemVisual : MonoBehaviour {
                 }
 
                 // Reduce diagonal range
-                if (Math.Abs(x) + Math.Abs(z) > range) {
+                if (!isRangeSquare && (Math.Abs(x) + Math.Abs(z) > range)) {
                     continue;
                 }
 
@@ -114,7 +114,16 @@ public class GridSystemVisual : MonoBehaviour {
                 gridVisualType = GridVisualType.Red;
                 ShowGridPositionRange(UnitActionSystem.Instance.GetSelectedUnit().GetGridPosition(), shootAction.GetMaxShootDistance(), GridVisualType.RedSoft);
                 break;
-
+            case GrenadeAction grenadeAction:
+                gridVisualType = GridVisualType.Yellow;
+                break;
+            case SwordAction swordAction:
+                gridVisualType = GridVisualType.Red;
+                ShowGridPositionRange(UnitActionSystem.Instance.GetSelectedUnit().GetGridPosition(), swordAction.GetMaxSwordDistance(), GridVisualType.RedSoft, true);
+                break;
+            case InteractAction interactAction:
+                gridVisualType = GridVisualType.Blue;            
+                break;
         }
         ShowGridPositionList(selectedAction.GetValidActionGridPositionList(), gridVisualType);
     }

@@ -14,7 +14,7 @@ public class MouseWorld : MonoBehaviour {
     }
 
     public static Vector3 GetPosition() {
-        Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out RaycastHit raycastHit, float.MaxValue, instance.MousePlaneLayerMask);
+        Physics.Raycast(Camera.main.ScreenPointToRay(InputManager.Instance.GetMouseScreenPosition()), out RaycastHit raycastHit, float.MaxValue, instance.MousePlaneLayerMask);
         return raycastHit.point;
     }
 }
