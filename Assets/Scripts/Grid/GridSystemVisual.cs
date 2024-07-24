@@ -24,7 +24,7 @@ public class GridSystemVisual : MonoBehaviour {
     [SerializeField] private Transform gridSystemVisualSingle;
     [SerializeField] private List<GridVisualTypeMaterial> gridVisualTypeMaterialList;
 
-    private GridSystemVisualSingle[,] gridSystemVisualSingleArray;
+    private GridSystemVisualSingle[,,] gridSystemVisualSingleArray;
 
     private void Awake() {
         if (Instance != null) {
@@ -36,12 +36,17 @@ public class GridSystemVisual : MonoBehaviour {
     }
 
     private void Start() {
-        gridSystemVisualSingleArray = new GridSystemVisualSingle[LevelGrid.Instance.GetWidth(), LevelGrid.Instance.GetHeight()];
+        gridSystemVisualSingleArray = new GridSystemVisualSingle[
+            LevelGrid.Instance.GetWidth(),
+            LevelGrid.Instance.GetHeight(),
+            LevelGrid.Instance.GetFloorAmount()];
 
         for (int x = 0; x < LevelGrid.Instance.GetWidth(); x++) {
             for (int z = 0; z < LevelGrid.Instance.GetHeight(); z++) {
-                Transform gridSingleTransform = Instantiate(gridSystemVisualSingle, LevelGrid.Instance.GetWorldPosition(new GridPosition(x, z)), Quaternion.identity);
-                gridSystemVisualSingleArray[x, z] = gridSingleTransform.GetComponent<GridSystemVisualSingle>();
+                for (int floor = 0; floor < LevelGrid.Instance.GetFloorAmount(); floor++) {
+                    Transform gridSingleTransform = Instantiate(gridSystemVisualSingle, LevelGrid.Instance.GetWorldPosition(new GridPosition(x, z, floor)), Quaternion.identity);
+                    gridSystemVisualSingleArray[x, z, floor] = gridSingleTransform.GetComponent<GridSystemVisualSingle>();
+                }
             }
         }
 
@@ -62,14 +67,16 @@ public class GridSystemVisual : MonoBehaviour {
     public void HideAllGridPosition() {
         for(int x = 0; x < LevelGrid.Instance.GetWidth(); x++) {
             for (int z = 0; z < LevelGrid.Instance.GetHeight(); z++) {
-                gridSystemVisualSingleArray[x, z].Hide();
+                for (int floor = 0; floor < LevelGrid.Instance.GetFloorAmount(); floor++) {
+                    gridSystemVisualSingleArray[x, z, floor].Hide();
+                }
             }
         }
     }
 
     private void ShowGridPositionList(List<GridPosition> gridPositionList, GridVisualType gridVisualType) {
-        foreach(GridPosition gridPosition in gridPositionList) {
-            gridSystemVisualSingleArray[gridPosition.x, gridPosition.z].Show(GetGridVisualTypeMaterial(gridVisualType));
+        foreach (GridPosition gridPosition in gridPositionList) {
+            gridSystemVisualSingleArray[gridPosition.x, gridPosition.z, gridPosition.floor].Show(GetGridVisualTypeMaterial(gridVisualType));
         }
     }
 
@@ -77,19 +84,21 @@ public class GridSystemVisual : MonoBehaviour {
         List<GridPosition> gridPositionList = new List<GridPosition>();
         for (int x = -range; x <= range; x++) {
             for (int z = -range; z <= range; z++) {
-                GridPosition tryGridPosition = new GridPosition(x, z) + gridPosition;
+                for (int floor = 0; floor < LevelGrid.Instance.GetFloorAmount(); floor++) {
+                    GridPosition tryGridPosition = new GridPosition(x, z, floor) + gridPosition;
 
-                // Position out of bounds
-                if (!LevelGrid.Instance.IsValidGridPosition(tryGridPosition)) {
-                    continue;
+                    // Position out of bounds
+                    if (!LevelGrid.Instance.IsValidGridPosition(tryGridPosition)) {
+                        continue;
+                    }
+
+                    // Reduce diagonal range
+                    if (!isRangeSquare && (Math.Abs(x) + Math.Abs(z) > range)) {
+                        continue;
+                    }
+
+                    gridPositionList.Add(tryGridPosition);
                 }
-
-                // Reduce diagonal range
-                if (!isRangeSquare && (Math.Abs(x) + Math.Abs(z) > range)) {
-                    continue;
-                }
-
-                gridPositionList.Add(tryGridPosition);
             }
         }
 

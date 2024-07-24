@@ -57,40 +57,42 @@ public class MoveAction : BaseAction {
 
         for (int x = -maxMoveDistance; x <= maxMoveDistance; x++) {
             for (int z = -maxMoveDistance; z <= maxMoveDistance; z++) {
-                GridPosition tryGridPosition = new GridPosition(x, z) + unitGridPosition;
+                for (int floor = -maxMoveDistance; floor <= maxMoveDistance; floor++) {
+                    GridPosition tryGridPosition = new GridPosition(x, z, floor) + unitGridPosition;
 
-                // Position out of bounds
-                if (!LevelGrid.Instance.IsValidGridPosition(tryGridPosition)) {
-                    continue;
+                    // Position out of bounds
+                    if (!LevelGrid.Instance.IsValidGridPosition(tryGridPosition)) {
+                        continue;
+                    }
+
+                    // Position occupied by self
+                    if (unitGridPosition == tryGridPosition) {
+                        continue;
+                    }
+
+                    // Position occupied by other unit
+                    if (LevelGrid.Instance.HasUnitAtGridPosition(tryGridPosition)) {
+                        continue;
+                    }
+
+                    // Check for obstacles
+                    if (!Pathfinding.Instance.IsWalkableGridPosition(tryGridPosition)) {
+                        continue;
+                    }
+
+                    // Check for unreachable tile
+                    if (!Pathfinding.Instance.HasPath(unitGridPosition, tryGridPosition)) {
+                        continue;
+                    }
+
+                    // Check for path too lengthy
+                    int pathfindingDistanceMulti = 10;
+                    if (Pathfinding.Instance.GetPathLength(unitGridPosition, tryGridPosition) > maxMoveDistance * pathfindingDistanceMulti) {
+                        continue;
+                    }
+
+                    validGridPositionList.Add(tryGridPosition);
                 }
-
-                // Position occupied by self
-                if (unitGridPosition == tryGridPosition) {
-                    continue;
-                }
-
-                // Position occupied by other unit
-                if (LevelGrid.Instance.HasUnitAtGridPosition(tryGridPosition)) {
-                    continue;
-                }
-
-                // Check for obstacles
-                if (!Pathfinding.Instance.IsWalkableGridPosition(tryGridPosition)) {
-                    continue;
-                }
-
-                // Check for unreachable tile
-                if (!Pathfinding.Instance.HasPath(unitGridPosition, tryGridPosition)) {
-                    continue;
-                }
-
-                // Check for path too lengthy
-                int pathfindingDistanceMulti = 10;
-                if (Pathfinding.Instance.GetPathLength(unitGridPosition, tryGridPosition) > maxMoveDistance * pathfindingDistanceMulti) {
-                    continue;
-                }
-
-                validGridPositionList.Add(tryGridPosition);
             }
         }
 

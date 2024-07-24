@@ -9,7 +9,7 @@ public class PathNode {
     private int hCost;
     private int fCost;
     private PathNode cameFromPathNode;
-    private bool isWalkable = true;
+    private bool isWalkable = false;
 
     public PathNode(GridPosition gridPosition) {
         this.gridPosition = gridPosition;

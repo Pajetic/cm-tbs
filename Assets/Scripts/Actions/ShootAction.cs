@@ -87,7 +87,7 @@ public class ShootAction : BaseAction {
 
         for (int x = -maxShootDistance; x <= maxShootDistance; x++) {
             for (int z = -maxShootDistance; z <= maxShootDistance; z++) {
-                GridPosition tryGridPosition = new GridPosition(x, z) + unitGridPosition;
+                GridPosition tryGridPosition = new GridPosition(x, z, 0) + unitGridPosition;
 
                 // Position out of bounds
                 if (!LevelGrid.Instance.IsValidGridPosition(tryGridPosition)) {
