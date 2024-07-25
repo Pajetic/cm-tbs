@@ -41,7 +41,9 @@ public class ShootAction : BaseAction {
 
         switch (state) {
             case State.Aiming:
-                transform.forward = Vector3.Lerp(transform.forward, (targetUnit.GetWorldPosition() - unit.GetWorldPosition()).normalized, rotationSpeed * Time.deltaTime);
+                Vector3 aimDirection = (targetUnit.GetWorldPosition() - unit.GetWorldPosition()).normalized;
+                aimDirection.y = 0f;
+                transform.forward = Vector3.Slerp(transform.forward, aimDirection, rotationSpeed * Time.deltaTime);
                 break;
             case State.Shooting:
                 if (canShootBullet) {
@@ -87,42 +89,44 @@ public class ShootAction : BaseAction {
 
         for (int x = -maxShootDistance; x <= maxShootDistance; x++) {
             for (int z = -maxShootDistance; z <= maxShootDistance; z++) {
-                GridPosition tryGridPosition = new GridPosition(x, z, 0) + unitGridPosition;
+                for (int floor = -maxShootDistance; floor <= maxShootDistance; floor++) {
+                    GridPosition tryGridPosition = new GridPosition(x, z, floor) + unitGridPosition;
 
-                // Position out of bounds
-                if (!LevelGrid.Instance.IsValidGridPosition(tryGridPosition)) {
-                    continue;
+                    // Position out of bounds
+                    if (!LevelGrid.Instance.IsValidGridPosition(tryGridPosition)) {
+                        continue;
+                    }
+
+                    // Restrict distance on diagonals
+                    if (Math.Abs(x) + Math.Abs(z) > maxShootDistance) {
+                        continue;
+                    }
+
+                    // Position has no unit
+                    if (!LevelGrid.Instance.HasUnitAtGridPosition(tryGridPosition)) {
+                        continue;
+                    }
+
+                    // Unit belong to same team
+                    Unit target = LevelGrid.Instance.GetUnitAtGridPosition(tryGridPosition);
+                    if (unit.IsEnemy() == target.IsEnemy()) {
+                        continue;
+                    }
+
+                    float unitShootHeight = 1.7f;
+                    Vector3 unitWorldPosition = LevelGrid.Instance.GetWorldPosition(unitGridPosition);  
+                    Vector3 shootDir = (target.GetWorldPosition() - unitWorldPosition).normalized;
+                    // Check line of sight
+                    if (Physics.Raycast(
+                        unitWorldPosition + Vector3.up * unitShootHeight,
+                        shootDir,
+                        Vector3.Distance(unitWorldPosition, target.GetWorldPosition()),
+                        obstaclesLayerMask)) {
+                        continue;
+                    }
+
+                    validGridPositionList.Add(tryGridPosition);
                 }
-
-                // Restrict distance on diagonals
-                if (Math.Abs(x) + Math.Abs(z) > maxShootDistance) {
-                    continue;
-                }
-
-                // Position has no unit
-                if (!LevelGrid.Instance.HasUnitAtGridPosition(tryGridPosition)) {
-                    continue;
-                }
-
-                // Unit belong to same team
-                Unit target = LevelGrid.Instance.GetUnitAtGridPosition(tryGridPosition);
-                if (unit.IsEnemy() == target.IsEnemy()) {
-                    continue;
-                }
-
-                float unitShootHeight = 1.7f;
-                Vector3 unitWorldPosition = LevelGrid.Instance.GetWorldPosition(unitGridPosition);  
-                Vector3 shootDir = (target.GetWorldPosition() - unitWorldPosition).normalized;
-                // Check line of sight
-                if (Physics.Raycast(
-                    unitWorldPosition + Vector3.up * unitShootHeight,
-                    shootDir,
-                    Vector3.Distance(unitWorldPosition, target.GetWorldPosition()),
-                    obstaclesLayerMask)) {
-                    continue;
-                }
-
-                validGridPositionList.Add(tryGridPosition);
             }
         }
 

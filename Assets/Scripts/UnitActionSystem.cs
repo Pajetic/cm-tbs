@@ -56,7 +56,7 @@ public class UnitActionSystem : MonoBehaviour {
     private void HandleAction() {
         if (InputManager.Instance.IsMouseButtonDownThisFrame()) {
             // Check invalid target location
-            GridPosition mouseGridPosition = LevelGrid.Instance.GetGridPosition(MouseWorld.GetPosition());
+            GridPosition mouseGridPosition = LevelGrid.Instance.GetGridPosition(MouseWorld.GetPositionIgnoreHidden());
             if (!selectedAction.IsValidActionGridPosition(mouseGridPosition)) {
                 return;
             }

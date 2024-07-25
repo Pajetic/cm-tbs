@@ -53,7 +53,8 @@ public class UnitAnimator : MonoBehaviour {
         animator.SetTrigger("Shoot");
         BulletProjectile bullet = Instantiate(bulletProjectilePrefab, bulletSpawnTransform.position, Quaternion.identity).GetComponent<BulletProjectile>();
         Vector3 bulletTarget = e.targetUnit.GetWorldPosition();
-        bulletTarget.y = bulletSpawnTransform.position.y;
+        float unitShootHeight = 1.7f;
+        bulletTarget.y += unitShootHeight;
         bullet.Setup(bulletTarget);
     }
 
